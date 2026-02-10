@@ -1,0 +1,31 @@
+<% layout("layout", { title: "About" }) %>
+
+<section class="card">
+  <h1>About this project</h1>
+  <p>
+    A mini full-stack app built with <strong>Express</strong>, <strong>SQLite</strong> and <strong>JWT</strong>.
+    After login, you can manage personal notes (only you can see them).
+  </p>
+
+  <div class="grid">
+    <div class="card card--soft">
+      <h3>Security</h3>
+      <ul class="list">
+        <li>Password hashing with bcrypt</li>
+        <li>JWT stored in HttpOnly cookie</li>
+        <li>CSRF protection for forms</li>
+        <li>Rate limit on auth endpoints</li>
+      </ul>
+    </div>
+
+    <div class="card card--soft">
+      <h3>Deployment</h3>
+      <ul class="list">
+        <li>Clone from GitHub</li>
+        <li>Run migrations</li>
+        <li>Start with PM2</li>
+        <li>Optional Nginx reverse proxy</li>
+      </ul>
+    </div>
+  </div>
+</section>

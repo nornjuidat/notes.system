@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title><%= title || "User Notes" %></title>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar__inner">
+      <a class="brand" href="/">UserNotes</a>
+      <nav class="nav">
+        <a href="/about" class="nav__link">About</a>
+        <% if (user) { %>
+          <a href="/app" class="nav__link">My Notes</a>
+          <form method="POST" action="/logout" class="nav__form">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button class="btn btn--ghost" type="submit">Logout</button>
+          </form>
+        <% } else { %>
+          <a href="/login" class="nav__link">Login</a>
+          <a href="/register" class="btn btn--primary">Register</a>
+        <% } %>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <%- body %>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__inner">
+      <span>© <%= new Date().getFullYear() %> UserNotes</span>
+      <span class="muted">SQLite • Express • JWT</span>
+    </div>
+  </footer>
+</body>
+</html>

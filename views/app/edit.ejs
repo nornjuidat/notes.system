@@ -1,0 +1,27 @@
+<% layout("layout", { title: mode === "new" ? "New Note" : "Edit Note" }) %>
+
+<section class="card">
+  <div class="pagehead">
+    <div>
+      <h1><%= mode === "new" ? "New Note" : "Edit Note" %></h1>
+      <p class="muted">Only you can see this note.</p>
+    </div>
+    <a class="btn btn--ghost" href="/app">Back</a>
+  </div>
+
+  <% if (error) { %>
+    <div class="alert alert--danger"><%= error %></div>
+  <% } %>
+
+  <form method="POST" action="<%= mode === "new" ? "/app/new" : ("/app/edit/" + note.id) %>" class="form">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+    <label class="label">Title</label>
+    <input class="input" name="title" value="<%= note.title || '' %>" required minlength="2" />
+
+    <label class="label">Content</label>
+    <textarea class="textarea" name="content" rows="8" required><%= note.content || '' %></textarea>
+
+    <button class="btn btn--primary" type="submit"><%= mode === "new" ? "Create" : "Save" %></button>
+  </form>
+</section>

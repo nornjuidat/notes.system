@@ -1,0 +1,28 @@
+<% layout("layout", { title: "Register" }) %>
+
+<section class="auth">
+  <div class="card auth__card">
+    <h1>Create account</h1>
+    <p class="muted">Choose a username and password.</p>
+
+    <% if (error) { %>
+      <div class="alert alert--danger"><%= error %></div>
+    <% } %>
+
+    <form method="POST" action="/register" class="form">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+      <label class="label">Username</label>
+      <input class="input" name="username" placeholder="nor" value="<%= form.username || '' %>" required minlength="3" />
+
+      <label class="label">Password</label>
+      <input class="input" name="password" type="password" placeholder="min 6 chars" required minlength="6" />
+
+      <button class="btn btn--primary w100" type="submit">Register</button>
+    </form>
+
+    <p class="muted center mt16">
+      Already have an account? <a href="/login">Login</a>
+    </p>
+  </div>
+</section>

@@ -1,0 +1,38 @@
+<% layout("layout", { title: "My Notes" }) %>
+
+<section class="pagehead">
+  <div>
+    <h1>My Notes</h1>
+    <p class="muted">Logged in as <strong><%= user.username %></strong></p>
+  </div>
+  <a class="btn btn--primary" href="/app/new">+ New note</a>
+</section>
+
+<% if (!notes || notes.length === 0) { %>
+  <div class="card">
+    <h2>No notes yet</h2>
+    <p class="muted">Create your first note now.</p>
+    <a class="btn btn--primary" href="/app/new">Create note</a>
+  </div>
+<% } else { %>
+  <div class="notes">
+    <% notes.forEach(n => { %>
+      <article class="card note">
+        <div class="note__top">
+          <h2 class="note__title"><%= n.title %></h2>
+          <span class="pill">Updated <%= new Date(n.updated_at).toLocaleString() %></span>
+        </div>
+        <p class="note__content"><%= n.content %></p>
+
+        <div class="note__actions">
+          <a class="btn btn--ghost" href="/app/edit/<%= n.id %>">Edit</a>
+
+          <form method="POST" action="/app/delete/<%= n.id %>" onsubmit="return confirm('Delete note?');">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button class="btn btn--danger" type="submit">Delete</button>
+          </form>
+        </div>
+      </article>
+    <% }) %>
+  </div>
+<% } %>
