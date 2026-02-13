@@ -1,0 +1,29 @@
+services:
+  app:
+    build: .
+    container_name: notes-app
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      PORT: 3000
+      NODE_ENV: production
+      TRUST_PROXY: "true"          # ⭐ חובה
+      JWT_SECRET: ${JWT_SECRET}
+      TZ: Asia/Jerusalem        # 👈 כאן בדיוק
+
+      MONGO_URI: mongodb://mongo:27017/user_notes
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:7
+    container_name: notes-mongo
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:
+
+
