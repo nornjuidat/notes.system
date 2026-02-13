@@ -3,9 +3,16 @@ const jwt = require("jsonwebtoken");
 function requireAuth(req, res, next) {
   const token = req.cookies?.auth;
   if (!token) return res.redirect("/login");
+
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = { id: Number(payload.sub), username: payload.username };
+
+    // ✅ MongoDB: משתמשים ב-_id כמחרוזת
+    req.user = {
+      _id: payload.sub,          // ← ObjectId string
+      username: payload.username
+    };
+
     return next();
   } catch (e) {
     res.clearCookie("auth", { path: "/" });

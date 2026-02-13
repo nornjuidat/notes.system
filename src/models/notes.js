@@ -1,64 +1,79 @@
-const db = require("../db");
+const Note = require("./Note");
+const mongoose = require("mongoose");
 
-function listByUser(userId) {
-  return new Promise((resolve, reject) => {
-    db.all(
-      "SELECT * FROM notes WHERE user_id = ? ORDER BY updated_at DESC",
-      [userId],
-      (err, rows) => (err ? reject(err) : resolve(rows))
-    );
-  });
+function toObjectId(id) {
+  if (!id) {
+    throw new Error("Missing id");
+  }
+
+  // אם כבר ObjectId – תחזיר כמו שהוא
+  if (id instanceof mongoose.Types.ObjectId) {
+    return id;
+  }
+
+  // בדיקת תקינות
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new Error("Invalid ObjectId: " + id);
+  }
+
+  return new mongoose.Types.ObjectId(id);
 }
 
-function getOne({ noteId, userId }) {
-  return new Promise((resolve, reject) => {
-    db.get(
-      "SELECT * FROM notes WHERE id = ? AND user_id = ?",
-      [noteId, userId],
-      (err, row) => (err ? reject(err) : resolve(row))
-    );
-  });
+async function listByUser(userId) {
+  return await Note
+    .find({ user_id: toObjectId(userId) })
+    .sort({ updated_at: -1 })
+    .lean();
 }
 
-function createNote({ userId, title, content }) {
-  const now = new Date().toISOString();
-  return new Promise((resolve, reject) => {
-    db.run(
-      "INSERT INTO notes (user_id, title, content, created_at, updated_at) VALUES (?, ?, ?, ?, ?)",
-      [userId, title, content, now, now],
-      function (err) {
-        if (err) reject(err);
-        else resolve({ id: this.lastID });
+async function getOne({ noteId, userId }) {
+  return await Note.findOne({
+    _id: toObjectId(noteId),
+    user_id: toObjectId(userId)
+  }).lean();
+}
+
+async function createNote({ userId, title, content }) {
+  const note = await Note.create({
+    user_id: toObjectId(userId),
+    title,
+    content
+  });
+
+  return { id: note._id };
+}
+
+async function updateNote({ noteId, userId, title, content }) {
+  const result = await Note.updateOne(
+    {
+      _id: toObjectId(noteId),
+      user_id: toObjectId(userId)
+    },
+    {
+      $set: {
+        title,
+        content,
+        updated_at: new Date()
       }
-    );
-  });
+    }
+  );
+
+  return { changes: result.modifiedCount };
 }
 
-function updateNote({ noteId, userId, title, content }) {
-  const now = new Date().toISOString();
-  return new Promise((resolve, reject) => {
-    db.run(
-      "UPDATE notes SET title = ?, content = ?, updated_at = ? WHERE id = ? AND user_id = ?",
-      [title, content, now, noteId, userId],
-      function (err) {
-        if (err) reject(err);
-        else resolve({ changes: this.changes });
-      }
-    );
+async function deleteNote({ noteId, userId }) {
+  const result = await Note.deleteOne({
+    _id: toObjectId(noteId),
+    user_id: toObjectId(userId)
   });
+
+  return { changes: result.deletedCount };
 }
 
-function deleteNote({ noteId, userId }) {
-  return new Promise((resolve, reject) => {
-    db.run(
-      "DELETE FROM notes WHERE id = ? AND user_id = ?",
-      [noteId, userId],
-      function (err) {
-        if (err) reject(err);
-        else resolve({ changes: this.changes });
-      }
-    );
-  });
-}
-
-module.exports = { listByUser, getOne, createNote, updateNote, deleteNote };
+module.exports = {
+  listByUser,
+  getOne,
+  createNote,
+  updateNote,
+  deleteNote
+};

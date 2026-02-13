@@ -1,26 +1,23 @@
-const db = require("../db");
+const User = require("./user"); // זה ה-model של mongoose
 
-function findByUsername(username) {
-  return new Promise((resolve, reject) => {
-    db.get("SELECT * FROM users WHERE username = ?", [username], (err, row) => {
-      if (err) reject(err);
-      else resolve(row);
-    });
-  });
+async function findByUsername(username) {
+  return await User.findOne({ username }).lean();
 }
 
-function createUser({ username, password_hash }) {
-  const now = new Date().toISOString();
-  return new Promise((resolve, reject) => {
-    db.run(
-      "INSERT INTO users (username, password_hash, created_at) VALUES (?, ?, ?)",
-      [username, password_hash, now],
-      function (err) {
-        if (err) reject(err);
-        else resolve({ id: this.lastID, username, created_at: now });
-      }
-    );
+async function createUser({ username, password_hash }) {
+  const user = await User.create({
+    username,
+    password_hash
   });
+
+  return {
+    id: user._id,
+    username: user.username,
+    created_at: user.created_at
+  };
 }
 
-module.exports = { findByUsername, createUser };
+module.exports = {
+  findByUsername,
+  createUser
+};

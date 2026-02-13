@@ -9,9 +9,14 @@ const router = express.Router();
 
 function signToken(user) {
   return jwt.sign(
-    { username: user.username },
+    {
+      username: user.username
+    },
     process.env.JWT_SECRET,
-    { subject: String(user.id), expiresIn: "7d" }
+    {
+      subject: user._id.toString(), // ✅ MongoDB ObjectId כ־string
+      expiresIn: "7d"
+    }
   );
 }
 
@@ -27,41 +32,85 @@ function cookieOptions() {
   };
 }
 
-router.get("/register", (req, res) => res.render("auth/register", { error: null, form: {} }));
-router.get("/login", (req, res) => res.render("auth/login", { error: null, form: {} }));
+router.get("/register", (req, res) =>
+  res.render("auth/register", { error: null, form: {} })
+);
 
-router.post("/register", authLimiter, asyncHandler(async (req, res) => {
-  const username = String(req.body.username || "").trim().toLowerCase();
-  const password = String(req.body.password || "");
+router.get("/login", (req, res) =>
+  res.render("auth/login", { error: null, form: {} })
+);
 
-  if (username.length < 3) return res.status(400).render("auth/register", { error: "Username must be 3+ chars", form: { username } });
-  if (password.length < 6) return res.status(400).render("auth/register", { error: "Password must be 6+ chars", form: { username } });
+router.post(
+  "/register",
+  authLimiter,
+  asyncHandler(async (req, res) => {
+    const username = String(req.body.username || "").trim().toLowerCase();
+    const password = String(req.body.password || "");
 
-  const exists = await findByUsername(username);
-  if (exists) return res.status(409).render("auth/register", { error: "Username already exists", form: { username } });
+    if (username.length < 3)
+      return res
+        .status(400)
+        .render("auth/register", {
+          error: "Username must be 3+ chars",
+          form: { username }
+        });
 
-  const password_hash = await bcrypt.hash(password, 12);
-  const user = await createUser({ username, password_hash });
+    if (password.length < 6)
+      return res
+        .status(400)
+        .render("auth/register", {
+          error: "Password must be 6+ chars",
+          form: { username }
+        });
 
-  const token = signToken(user);
-  res.cookie("auth", token, cookieOptions());
-  res.redirect("/app");
-}));
+    const exists = await findByUsername(username);
+    if (exists)
+      return res
+        .status(409)
+        .render("auth/register", {
+          error: "Username already exists",
+          form: { username }
+        });
 
-router.post("/login", authLimiter, asyncHandler(async (req, res) => {
-  const username = String(req.body.username || "").trim().toLowerCase();
-  const password = String(req.body.password || "");
+    const password_hash = await bcrypt.hash(password, 12);
+    const user = await createUser({ username, password_hash });
 
-  const user = await findByUsername(username);
-  if (!user) return res.status(401).render("auth/login", { error: "Invalid username or password", form: { username } });
+    const token = signToken(user);
+    res.cookie("auth", token, cookieOptions());
+    res.redirect("/app");
+  })
+);
 
-  const ok = await bcrypt.compare(password, user.password_hash);
-  if (!ok) return res.status(401).render("auth/login", { error: "Invalid username or password", form: { username } });
+router.post(
+  "/login",
+  authLimiter,
+  asyncHandler(async (req, res) => {
+    const username = String(req.body.username || "").trim().toLowerCase();
+    const password = String(req.body.password || "");
 
-  const token = signToken(user);
-  res.cookie("auth", token, cookieOptions());
-  res.redirect("/app");
-}));
+    const user = await findByUsername(username);
+    if (!user)
+      return res
+        .status(401)
+        .render("auth/login", {
+          error: "Invalid username or password",
+          form: { username }
+        });
+
+    const ok = await bcrypt.compare(password, user.password_hash);
+    if (!ok)
+      return res
+        .status(401)
+        .render("auth/login", {
+          error: "Invalid username or password",
+          form: { username }
+        });
+
+    const token = signToken(user);
+    res.cookie("auth", token, cookieOptions());
+    res.redirect("/app");
+  })
+);
 
 router.post("/logout", (req, res) => {
   res.clearCookie("auth", { path: "/" });

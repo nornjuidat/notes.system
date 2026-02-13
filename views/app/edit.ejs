@@ -13,15 +13,33 @@
     <div class="alert alert--danger"><%= error %></div>
   <% } %>
 
-  <form method="POST" action="<%= mode === "new" ? "/app/new" : ("/app/edit/" + note.id) %>" class="form">
+  <!-- ✅ חשוב: להשתמש ב-note._id ולא note.id -->
+  <form
+    method="POST"
+    action="<%= mode === 'new' ? '/app/new' : ('/app/edit/' + note._id) %>"
+    class="form"
+  >
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
     <label class="label">Title</label>
-    <input class="input" name="title" value="<%= note.title || '' %>" required minlength="2" />
+    <input
+      class="input"
+      name="title"
+      value="<%= note.title || '' %>"
+      required
+      minlength="2"
+    />
 
     <label class="label">Content</label>
-    <textarea class="textarea" name="content" rows="8" required><%= note.content || '' %></textarea>
+    <textarea
+      class="textarea"
+      name="content"
+      rows="8"
+      required
+    ><%= note.content || '' %></textarea>
 
-    <button class="btn btn--primary" type="submit"><%= mode === "new" ? "Create" : "Save" %></button>
+    <button class="btn btn--primary" type="submit">
+      <%= mode === "new" ? "Create" : "Save" %>
+    </button>
   </form>
 </section>

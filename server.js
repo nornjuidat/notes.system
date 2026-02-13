@@ -1,4 +1,6 @@
 require("dotenv").config();
+require("./src/db"); // ✅ MongoDB connection
+
 const express = require("express");
 const path = require("path");
 const cookieParser = require("cookie-parser");
@@ -86,4 +88,6 @@ app.use((err, req, res, next) => {
   res.status(500).render("errors/500");
 });
 
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, () =>
+  console.log(`🚀 Server running on port ${PORT}`)
+);
